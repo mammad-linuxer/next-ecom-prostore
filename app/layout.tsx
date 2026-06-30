@@ -1,23 +1,17 @@
 import type { Metadata } from "next";
-import { /*Geist, Geist_Mono*/ Inter } from "next/font/google";
-// import "./globals.css";
+import { Inter } from "next/font/google";
 import "@/assets/styles/globals.css";
+import { APP_NAME, APP_DESCRIPTION, SERVER_URL } from "@/lib/constants";
 
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
-
-const inter = Inter({subsets: ["latin"]});
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Lian Kala Shop Center",
-  description: "Best E-commerce website on the planet",
+  title: {
+    template: `%s | ${APP_NAME}`,
+    default: APP_NAME,
+  },
+  description: APP_DESCRIPTION,
+  metadataBase: new URL(SERVER_URL),
 };
 
 export default function RootLayout({
@@ -26,11 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.className} antialiased `}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased `}>{children}</body>
     </html>
   );
 }
