@@ -1,11 +1,11 @@
-import React from "react";
-
+import { ProductType } from "./product-type";
+import ProductCard from "./product-card";
 const ProductList = ({
   data,
   title,
   limit,
 }: {
-  data: dataType[];
+  data: ProductType[];
   title?: string;
   limit?: number;
 }) => {
@@ -15,11 +15,11 @@ const ProductList = ({
       <h1 className="mb-2">{title}</h1>
       {limitedData.length > 0 ? (
         <div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols3 
-        lg:grid-cols4 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 
+        lg:grid-cols-4 gap-4"
         >
           {limitedData.map((product, id: number) => (
-            <div key={id}>{product.name}</div>
+            <ProductCard key={id} data={product} />
           ))}
         </div>
       ) : (
@@ -32,33 +32,3 @@ const ProductList = ({
 };
 
 export default ProductList;
-
-type dataType =
-  | {
-      name: string;
-      slug: string;
-      category: string;
-      description: string;
-      images: string[];
-      price: number;
-      brand: string;
-      rating: number;
-      numReviews: number;
-      stock: number;
-      isFeatured: boolean;
-      banner: string;
-    }
-  | {
-      name: string;
-      slug: string;
-      category: string;
-      description: string;
-      images: string[];
-      price: number;
-      brand: string;
-      rating: number;
-      numReviews: number;
-      stock: number;
-      isFeatured: boolean;
-      banner: null;
-    };
