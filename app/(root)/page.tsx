@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import React from "react";
 
-const Homepage = () => {
+// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const Homepage = /*async*/ () => {
+  // await delay(2000);
   return (
     <>
       <h1>Lian Kala</h1>
