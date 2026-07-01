@@ -15,11 +15,11 @@ const ProductList = ({
       <h1 className="mb-2">{title}</h1>
       {limitedData.length > 0 ? (
         <div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 
+          className="grid place-items-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 
         lg:grid-cols-4 gap-4"
         >
           {limitedData.map((product, id: number) => (
-            <ProductCard key={id} data={product} />
+            <ProductCard key={id} product={product} />
           ))}
         </div>
       ) : (

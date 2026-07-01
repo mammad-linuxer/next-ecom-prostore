@@ -2,29 +2,37 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ProductType } from "./product-type";
 import Image from "next/image";
 import Link from "next/link";
-const ProductCard = ({ data }: { data: ProductType }) => {
+import ProductPrice from "./product-price";
+const ProductCard = ({ product }: { product: ProductType }) => {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader className="p-0 items-center">
-        <Link href={`/products/${data.slug}`}>
+        <Link
+          href={`/products/${product.slug}`}
+          className="flex justify-center"
+        >
           <Image
             priority={true}
-            src={data.images[0]}
-            alt={data.description}
-            className="aspect-square object-cover rounded"
+            src={product.images[0]}
+            alt={product.description}
+            className="aspect-square object-cover rounded items-center"
             width={300}
             height={300}
           />
         </Link>
       </CardHeader>
       <CardContent className="p-4 grid gap-4">
-        <div className="text-xs">{data.brand}</div>
-        <Link href={`/product/${data.slug}`}>
-          <h2 className="text-sm font-medium">{data.name}</h2>
+        <div className="text-xs">{product.brand}</div>
+        <Link href={`/product/${product.slug}`}>
+          <h2 className="text-sm font-medium">{product.name}</h2>
         </Link>
         <div className="flex-between px-0.5 gap-4">
-          <p>{data.rating} ⭐</p>
-          {data.stock > 0 ? <p>${data.price}</p> : <p>Out Of Stock</p>}
+          <p>{product.rating} ⭐</p>
+          {product.stock > 0 ? (
+            <ProductPrice value={product.price} className="text-blue-900" />
+          ) : (
+            <p className="text-amber-900 text-xl">Out Of Stock</p>
+          )}
         </div>
       </CardContent>
     </Card>
