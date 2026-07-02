@@ -14,7 +14,6 @@ import {
 const ModeToggle = () => {
   const { theme, setTheme } = useTheme();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -35,7 +34,9 @@ const ModeToggle = () => {
   //       </DropdownMenu>
   //     );
   //   }
-
+  if (!mounted) {
+    return null;
+  }
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
