@@ -1,4 +1,4 @@
-import { ProductType } from "@/components/shared/product/product-type";
+import { Product } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -7,13 +7,12 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // convert to js plain object
+export function convertToPlainObject<T>(value: T): Product[] {
+  return JSON.parse(JSON.stringify(value));
+}
 
-export function convertToPlainObject<T>(value: T): ProductType[] {
-  const output = JSON.parse(JSON.stringify(value));
-  const mappedOutput = output.map((product: ProductType) => ({
-    ...product,
-    price: Number(product.price),
-    rating: Number(product.rating),
-  }));
-  return mappedOutput;
+// Format number with decimal places
+export function formatNumberWithDecimal(num: number): string {
+  const [int, decimal] = num.toString().split("");
+  return decimal ? `${int}.${decimal.padEnd(2, "0")}` : `${int}.00`;
 }
