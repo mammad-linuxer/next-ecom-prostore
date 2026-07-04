@@ -8,7 +8,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     <Card className="w-full max-w-sm">
       <CardHeader className="p-0 items-center">
         <Link
-          href={`/products/${product.slug}`}
+          href={`/product/${product.slug}`}
           className="flex justify-center"
         >
           <Image
