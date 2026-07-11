@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import CredentialsSignInForm from "./credentials-signin-form";
 import {
   Card,
   CardContent,
@@ -36,7 +37,9 @@ const SignIn = () => {
             Select a method to sign in to your account
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">{/* FORM IS HERE */}</CardContent>
+        <CardContent className="space-y-4">
+          <CredentialsSignInForm />
+        </CardContent>
       </Card>
     </div>
   );
