@@ -5,6 +5,7 @@ import { signIn, signOut } from "@/auth";
 import { signInFormSchema, signUpFromSchema } from "../validator";
 import { hashSync } from "bcrypt-ts-edge";
 import { prisma } from "@/db/prisma";
+import { formatError } from "../utils";
 
 // Sign in the use with credentials
 export async function signInWithCredentials(
@@ -61,6 +62,6 @@ export async function signUp(pervState: unknown, formData: FormData) {
     if (isRedirectError(error)) {
       throw error;
     }
-    return { success: false, message: "Something went wrong!" };
+    return { success: false, message: formatError(error) };
   }
 }
