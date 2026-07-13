@@ -1,10 +1,13 @@
 import { compareSync } from "bcrypt-ts-edge";
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig, Session, User } from "next-auth";
+import { JWT } from "next-auth/jwt";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { prisma } from "@/db/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+
+type AuthUser = User & { role?: string };
 
 export const config = {
   pages: {
@@ -55,13 +58,62 @@ export const config = {
     }),
   ],
   callbacks: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async session({ session, user, trigger, token }: any) {
-      session.user.id = token.sub;
-      if (trigger === "update") {
-        session.user.name = user.name;
+    async session({
+      session,
+      user,
+      trigger,
+      token,
+    }: {
+      session: Session;
+      user: AuthUser;
+      trigger?: "update" | "signIn" | "signUp";
+      token: JWT;
+    }) {
+      if (session.user) {
+        session.user.id = token.sub;
+        session.user.name = token.name;
+
+        (session.user as AuthUser).role =
+          typeof token.role === "string" ? token.role : undefined;
+
+        if (trigger === "update" && token.name) {
+          session.user.name = token.name;
+        }
       }
+
       return session;
+    },
+    async jwt({
+      token,
+      user,
+      trigger,
+      session,
+    }: {
+      token: JWT;
+      user?: AuthUser;
+      trigger?: "update" | "signIn" | "signUp";
+      session?: Session;
+    }) {
+      // Assign user fields to token
+      if (user) {
+        token.role = user.role;
+
+        // If user has no name, use email as their default name
+        if (user.name === "NO_NAME") {
+          token.name = user.email!.split("@")[0];
+
+          // update the user in the database with the new name
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { name: token.name },
+          });
+        }
+      }
+      // Handle session updates (like name changes)
+      if (session?.user?.name && trigger === "update") {
+        token.name = session.user.name;
+      }
+      return token;
     },
   },
 } satisfies NextAuthConfig;
