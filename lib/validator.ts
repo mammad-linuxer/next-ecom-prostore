@@ -44,3 +44,27 @@ export const signUpFromSchema = z
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
+
+// Cart
+export const cartItemSchema = z.object({
+  productId: z.string().min(1, "Product is required"),
+  name: z.string().min(1, "Name is required"),
+  slug: z.string().min(1, "Slug is required"),
+  qty: z.number().int().nonnegative("Quantity must be a non-negative number"),
+  image: z.string().min(1, "Image is required"),
+  price: z
+    .number()
+    .refine((value) =>
+      /^\d+(\.\d{2})?$/.test(formatNumberWithDecimal(Number(value))),
+    ),
+});
+
+export const insertCartSchema = z.object({
+  items: z.array(cartItemSchema),
+  itemsPrice: currency,
+  totalPrice: currency,
+  shippingPrice: currency,
+  taxPrice: currency,
+  sessionCartId: z.string().min(1, "Session cart is required"),
+  userId: z.string().optional().nullable(),
+});
