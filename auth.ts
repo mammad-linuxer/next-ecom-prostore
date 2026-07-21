@@ -6,10 +6,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { prisma } from "@/db/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { authConfig } from "./auth.config";
 type AuthUser = User & { role?: string };
 
 export const config = {
+  ...authConfig,
   pages: {
     signIn: "/sign-in",
     error: "sign-in",
@@ -58,6 +61,7 @@ export const config = {
     }),
   ],
   callbacks: {
+    ...authConfig.callbacks, // brings in `authorized`
     async session({
       session,
       user,
@@ -115,6 +119,36 @@ export const config = {
       }
       return token;
     },
+    ////////////////
+    /*
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    authorized({ request, auth }: any) {
+      // Check for cart cookie
+      if (!request.cookies.get("sessionCartId")) {
+        // Generate  cart cookie
+        const sessionCartId = crypto.randomUUID();
+        // Clone the request headers
+        const newRequestHeaders = new Headers(request.headers);
+        
+        // Create a new response and the new headers
+        const response = NextResponse.next({
+          request: {
+            headers: newRequestHeaders,
+          },
+        });
+        
+        // Set the newly generated sessionCartId in the response cookies
+        response.cookies.set("sessionCartId", sessionCartId);
+        
+        // Return the response with the sessionCartId se
+        return response;
+        
+      } else {
+        return true;
+      }
+    },
+    */
+    ////////////////////
   },
 } satisfies NextAuthConfig;
 
