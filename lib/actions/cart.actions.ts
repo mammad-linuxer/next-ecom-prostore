@@ -2,9 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { z } from "zod";
+import { success, z } from "zod";
 import { auth } from "@/auth";
-import { formatError } from "../utils";
+import { formatError, round2 } from "../utils";
 import { cartItemSchema, insertCartSchema } from "../validator";
 import { prisma } from "@/db/prisma";
 import { CartItem } from "@/types";
@@ -14,6 +14,22 @@ import { totalmem } from "os";
 
 // Add item to cart in database
 export async function addItemToCart(data: CartItem) {
+  // Calculate cart price based on items
+  const calcPrice = (items: z.infer<typeof cartItemSchema>[]) => {
+    const itemsPrice = round2(
+        items.reduce((acc, item) => acc + Number(item.price) * item.qty, 0),
+      ),
+      shippingPrice = round2(itemsPrice > 100 ? 0 : 10),
+      taxPrice = round2(0.15 * itemsPrice),
+      totalPrice = round2(itemsPrice + shippingPrice + taxPrice);
+    return {
+      itemsPrice: itemsPrice.toFixed(2),
+      shippingPrice: shippingPrice.toFixed(2),
+      taxPrice: taxPrice.toFixed(2),
+      totalPrice: totalPrice.toFixed(2),
+    };
+  };
+
   try {
     // Check for session cart cookie
     const sessionCartId = (await cookies()).get("sessionCartId")?.value;
@@ -33,18 +49,32 @@ export async function addItemToCart(data: CartItem) {
     const product = await prisma.product.findFirst({
       where: { id: item.productId },
     });
-    // Console the Results
-    console.log({
-      "Session Cart ID": sessionCartId,
-      "user ID": userId,
-      "Item Requested": item,
-      Product: product,
-      Cart: cart,
-    });
-    return {
-      success: true,
-      message: `Testing Cart.`,
-    };
+    if (!product) throw new Error("Product Not Found");
+
+    if (!cart) {
+      // Create new cart object
+      const newCart = insertCartSchema.parse({
+        userId: userId,
+        items: [item],
+        sessionCartId: sessionCartId,
+        ...calcPrice([item]),
+      });
+
+      // Add to database
+      await prisma.cart.create({
+        data: newCart,
+      });
+
+      // Revalidate Product Page
+      revalidatePath(`/product/${product.slug}`);
+
+      return {
+        success: true,
+        message: "Item added to cart successfully",
+      };
+    } else {
+      
+    }
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
