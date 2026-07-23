@@ -1,4 +1,3 @@
-import { Product } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ZodError } from "zod";
@@ -9,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // convert to js plain object
-export function convertToPlainObject<T>(value: T): Product[] {
+export function convertToPlainObject<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
 

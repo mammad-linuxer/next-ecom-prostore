@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { success, z } from "zod";
+import { z } from "zod";
 import { auth } from "@/auth";
 import { formatError, round2 } from "../utils";
 import { cartItemSchema, insertCartSchema } from "../validator";
@@ -10,7 +10,6 @@ import { prisma } from "@/db/prisma";
 import { CartItem } from "@/types";
 import { Prisma } from "@prisma/client";
 import { convertToPlainObject } from "../utils";
-import { totalmem } from "os";
 
 // Add item to cart in database
 export async function addItemToCart(data: CartItem) {
@@ -73,7 +72,42 @@ export async function addItemToCart(data: CartItem) {
         message: "Item added to cart successfully",
       };
     } else {
-      
+      // check for existing item in cart
+      const existItem = (cart.items as CartItem[]).find(
+        (x) => x.productId === item.productId,
+      );
+
+      // If not enough in stock: Throw Error
+      if (existItem) {
+        if (product.stock < existItem.qty + 1) {
+          throw new Error("Not Enough in Stock");
+        }
+
+        // Increase the quantity of existing
+        (cart.items as CartItem[]).find(
+          (x) => (x.productId = item.productId),
+        )!.qty = existItem.qty + 1;
+      } else {
+        // If in stock, add item to cart
+        if (item.qty < 1) throw new Error("Not Enough in Stock");
+        cart.items.push(item);
+      }
+
+      // save to database
+      await prisma.cart.update({
+        where: { id: cart.id },
+        data: {
+          items: cart.items as Prisma.CartUpdateitemsInput[],
+          ...calcPrice(cart.items as CartItem[]),
+        },
+      });
+
+      revalidatePath(`/product/${product.slug}`);
+
+      return {
+        success: true,
+        message: `${product.name} ${existItem ? "updated at" : "added to"} cart successfully`,
+      };
     }
   } catch (error) {
     return { success: false, message: formatError(error) };
@@ -84,7 +118,8 @@ export async function addItemToCart(data: CartItem) {
 export async function getMyCart() {
   // Check for session cart cookie
   const sessionCartId = (await cookies()).get("sessionCartId")?.value;
-  if (!sessionCartId) throw new Error("Cart Session Not Found."); // or return undefined
+  if (!sessionCartId) return undefined;
+  //if (!sessionCartId) throw new Error("Cart Session Not Found."); // or return undefined
 
   // Get session and user ID
   const session = await auth();
