@@ -85,7 +85,7 @@ export async function addItemToCart(data: CartItem) {
 
         // Increase the quantity of existing
         (cart.items as CartItem[]).find(
-          (x) => (x.productId = item.productId),
+          (x) => x.productId === item.productId,
         )!.qty = existItem.qty + 1;
       } else {
         // If in stock, add item to cart
@@ -168,7 +168,9 @@ export async function removeItemFromCart(productId: string) {
 
     // Check if cart has only one of the item
     if (exist.qty === 1) {
-      (cart.items as CartItem[]).filter((x) => x.productId !== exist.productId);
+      cart.items = (cart.items as CartItem[]).filter(
+        (x) => x.productId !== exist.productId,
+      );
     } else {
       // Decrease quantity of existing item
       (cart.items as CartItem[]).find(

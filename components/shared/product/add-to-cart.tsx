@@ -1,14 +1,21 @@
 "use client";
-import { CartItem } from "@/types";
+import { Cart, CartItem } from "@/types";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { addItemToCart } from "@/lib/actions/cart.actions";
+import { addItemToCart, removeItemFromCart } from "@/lib/actions/cart.actions";
 
-const AddToCart = ({ item }: { item: Omit<CartItem, "cartId"> }) => {
+const AddToCart = ({
+  cart,
+  item,
+}: {
+  cart?: Cart;
+  item: Omit<CartItem, "cartId">;
+}) => {
   const router = useRouter();
 
+  // Add item to cart
   const handleAddToCart = async () => {
     // Execute the addItemToCart action
     const res = await addItemToCart(item);
@@ -26,7 +33,31 @@ const AddToCart = ({ item }: { item: Omit<CartItem, "cartId"> }) => {
     });
   };
 
-  return (
+  // Remove Item from cart
+  const handleRemoveFromCart = async () => {
+    const res = await removeItemFromCart(item.productId);
+    if (res.success) {
+      toast.success(res.message, {
+        action: { label: "Go to cart", onClick: () => router.push("/cart") },
+      });
+    } else {
+      toast.error(res.message);
+    }
+  };
+
+  const existItem =
+    cart && cart.items.find((x) => (x.productId === item.productId));
+  return existItem ? (
+    <div>
+      <Button variant={"outline"} onClick={handleRemoveFromCart}>
+        <Minus className="w-4 h-4" />
+      </Button>
+      <span className="px-2">{existItem.qty}</span>
+      <Button type="button" variant={"outline"} onClick={handleAddToCart}>
+        <Plus className="w-4 h-4" />
+      </Button>
+    </div>
+  ) : (
     <Button className="w-full" type="button" onClick={handleAddToCart}>
       <Plus /> Add To Cart
     </Button>

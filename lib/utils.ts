@@ -39,7 +39,6 @@ export function formatError(error: unknown) /* :string */ {
   if (isZodError(error) /*&& error.name === "ZodError"*/) {
     // Handle ZodError
     const errorObject = JSON.parse(error.message);
-    console.log(errorObject);
     return errorObject[0].message;
   } else if (isPrismaClientKnownRequestError(error)) {
     // Handle Prisma Error
