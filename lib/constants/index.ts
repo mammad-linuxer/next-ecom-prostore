@@ -16,3 +16,10 @@ export const signUpDefaultValues = {
   password: "",
   confirmPassword: "",
 };
+
+export const shippingAddressDefaultValues = {
+  fullName: "Mammad Ash",
+  streetAddress: "123 Ashoori St",
+  city: "Bushehr",
+  country: "Iran",
+};

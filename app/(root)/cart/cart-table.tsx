@@ -24,7 +24,7 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
   const router = useRouter();
   return (
     <>
-      <h1 className="py-4 h2-bold">CartTable</h1>
+      <h1 className="py-4 h2-bold">Cart Table</h1>
       {!cart || cart.items.length === 0 ? (
         <div>
           Cart is Empty <Link href={"/"}>Go Shopping</Link>
@@ -121,7 +121,7 @@ const CartTable = ({ cart }: { cart?: Cart }) => {
               <div className="pb-3 text-xl">
                 Subtotal ({cart.items.reduce((a, c) => a + c.qty, 0)}):
                 <span className="font-bold">
-                  {formatCurrency(cart.itemsPrice)}
+                   {' '} {formatCurrency(cart.itemsPrice)}
                 </span>
               </div>
               <Button
