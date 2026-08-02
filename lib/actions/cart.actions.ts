@@ -2,30 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { z } from "zod";
+//import { z } from "zod";
 import { auth } from "@/auth";
-import { formatError, round2 } from "../utils";
+import { formatError /* round2 */ } from "../utils";
 import { cartItemSchema, insertCartSchema } from "../validator";
 import { prisma } from "@/db/prisma";
 import { CartItem } from "@/types";
 import { Prisma } from "@prisma/client";
 import { convertToPlainObject } from "../utils";
-
-// Calculate cart price based on items
-const calcPrice = (items: z.infer<typeof cartItemSchema>[]) => {
-  const itemsPrice = round2(
-      items.reduce((acc, item) => acc + Number(item.price) * item.qty, 0),
-    ),
-    shippingPrice = round2(itemsPrice > 100 ? 0 : 10),
-    taxPrice = round2(0.15 * itemsPrice),
-    totalPrice = round2(itemsPrice + shippingPrice + taxPrice);
-  return {
-    itemsPrice: itemsPrice.toFixed(2),
-    shippingPrice: shippingPrice.toFixed(2),
-    taxPrice: taxPrice.toFixed(2),
-    totalPrice: totalPrice.toFixed(2),
-  };
-};
+import { calcPrice } from "../utils";
 
 // Add item to cart in database
 export async function addItemToCart(data: CartItem) {
@@ -110,6 +95,7 @@ export async function addItemToCart(data: CartItem) {
       };
     }
   } catch (error) {
+    //console.log(error)
     return { success: false, message: formatError(error) };
   }
 }

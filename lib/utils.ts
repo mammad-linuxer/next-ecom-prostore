@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ZodError } from "zod";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/client";
+import { CartItem } from "@/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -93,3 +94,40 @@ export function formatCurrency(amount: number | string | null) {
     return "NaN";
   }
 }
+
+// Calculate cart price based on items
+export const calcPrice = (items: CartItem[]) => {
+  const itemsPrice = round2(
+      items.reduce((acc, item) => acc + Number(item.price) * item.qty, 0),
+    ),
+    shippingPrice = round2(itemsPrice > 100 ? 0 : 10),
+    taxPrice = round2(0.15 * itemsPrice),
+    totalPrice = round2(itemsPrice + shippingPrice + taxPrice);
+  return {
+    itemsPrice: itemsPrice.toFixed(2),
+    shippingPrice: shippingPrice.toFixed(2),
+    taxPrice: taxPrice.toFixed(2),
+    totalPrice: totalPrice.toFixed(2),
+  };
+};
+
+// // Merge guest and user Cart Items
+// export function mergeCartItems(
+//   existingItems: CartItem[],
+//   guestItems: CartItem[],
+// ) {
+//   const mergedItems = [...existingItems];
+
+//   guestItems.forEach((item) => {
+//     const existingItem = mergedItems.find(
+//       (cartItem) => cartItem.productId === item.productId,
+//     );
+//     if (existingItem) {
+//       existingItem.qty += item.qty;
+//     } else {
+//       mergedItems.push(item);
+//     }
+//   });
+
+//   return mergedItems;
+// }

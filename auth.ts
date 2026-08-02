@@ -3,13 +3,38 @@ import type { NextAuthConfig, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
+import { CartItem } from "@/types";
 import { prisma } from "@/db/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+//import { NextResponse } from "next/server";
 import { authConfig } from "./auth.config";
+import { calcPrice } from "@/lib/utils";
+import { Prisma } from "@prisma/client";
 type AuthUser = User & { role?: string };
+
+// Merge guest and user Cart Items
+async function mergeCartItems(
+  existingItems: CartItem[],
+  guestItems: CartItem[],
+) {
+  const mergedItems = [...existingItems];
+
+  for (const item of guestItems) {
+    const existingItem = mergedItems.find(
+      (cartItem) => cartItem.productId === item.productId,
+    );
+    if (existingItem) {
+      const product = await prisma.product.findFirst({
+        where: { id: item.productId },
+      });
+      existingItem.qty = Math.min(existingItem.qty + item.qty, product!.stock);
+    } else {
+      mergedItems.push(item);
+    }
+  }
+  return mergedItems;
+}
 
 export const config = {
   ...authConfig,
@@ -64,7 +89,7 @@ export const config = {
     ...authConfig.callbacks, // brings in `authorized`
     async session({
       session,
-      user,
+      // user,
       trigger,
       token,
     }: {
@@ -117,6 +142,49 @@ export const config = {
           const cookiesObject = await cookies();
           const sessionCartId = cookiesObject.get("sessionCartId")?.value;
 
+          if (!sessionCartId) {
+            return token;
+          }
+
+          const guestCart = await prisma.cart.findFirst({
+            where: { sessionCartId },
+          });
+
+          if (!guestCart) {
+            return token;
+          }
+
+          const existingUserCart = await prisma.cart.findFirst({
+            where: { userId: user.id },
+          });
+
+          if (!existingUserCart) {
+            await prisma.cart.update({
+              where: { id: guestCart.id },
+              data: { userId: user.id },
+            });
+            return token;
+          }
+
+          const mergedItems = await mergeCartItems(
+            existingUserCart.items as CartItem[],
+            guestCart.items as CartItem[],
+          );
+
+          const totals = calcPrice(mergedItems);
+
+          await prisma.cart.update({
+            where: { id: existingUserCart.id },
+            data: {
+              items: mergedItems as Prisma.CartUpdateitemsInput[],
+              ...totals,
+              sessionCartId,
+            },
+          });
+
+          await prisma.cart.delete({ where: { id: guestCart.id } });
+          //////////////////// The Modified Brad Way //////////////////
+          /*
           if (sessionCartId) {
             const sessionCart = await prisma.cart.findFirst({
               where: { sessionCartId },
@@ -143,6 +211,8 @@ export const config = {
               }
             }
           }
+          */
+          //////////////////// The Modified Brad way ///////////////////////////
         }
       }
       // Handle session updates (like name changes)

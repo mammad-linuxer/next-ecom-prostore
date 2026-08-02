@@ -12,6 +12,7 @@ import { prisma } from "@/db/prisma";
 import { formatError } from "../utils";
 import { ShippingAddress } from "@/types";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 
 // Sign in the use with credentials
 export async function signInWithCredentials(
@@ -35,7 +36,10 @@ export async function signInWithCredentials(
 
 // Sign the user out
 export async function signOutUser() {
+  //const sessionCartId = (await cookies()).get("sessionCartId")?.value;
+  (await cookies()).delete('sessionCartId')
   await signOut();
+  //await prisma.cart.delete({ where: { sessionCartId: sessionCartId } });
 }
 
 //Register a new user
