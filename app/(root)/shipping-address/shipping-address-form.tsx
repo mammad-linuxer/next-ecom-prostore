@@ -56,7 +56,7 @@ const ShippingAddressForm = ({
       // THIS LINE IS ADDED by me
 
       setTimeout(() => {
-        router.push("/payment-methods");
+        router.push("/payment-method");
       }, 1500);
     });
   };
