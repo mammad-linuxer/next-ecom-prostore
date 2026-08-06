@@ -4,7 +4,7 @@ import { getUserById } from "@/lib/actions/user.actions";
 import PaymentMethodForm from "./payment-method-form";
 
 export const metadata: Metadata = {
-  description: "Payment Method",
+  title: "Payment Method",
 };
 const PaymentMethodPage = async () => {
   const session = await auth();

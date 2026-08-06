@@ -106,5 +106,21 @@ export async function getOrderById(orderId: string) {
       user: { select: { name: true, email: true } },
     },
   });
-  return convertToPlainObject(data);
+  
+  if(!data) throw new Error('No Order Found')
+    
+    // This is another type of handling Decimal type of Prices for Order
+  return convertToPlainObject({
+    ...data,
+    itemsPrice: data!.itemsPrice.toString(),
+    taxPrice: data!.taxPrice.toString(),
+    shippingPrice:data!.shippingPrice.toString(),
+    totalPrice: data!.totalPrice.toString(),
+    orderItems:data.orderItems.map(item =>{
+      return {
+        ...item,
+        price:item.price.toString()
+      }
+    })
+  });
 }

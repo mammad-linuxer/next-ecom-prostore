@@ -22,7 +22,7 @@ import { Metadata } from "next";
 import PlaceOrderForm from "./place-order-form";
 
 export const metadata: Metadata = {
-  description: "Place Order",
+  title: "Place Order",
 };
 const PlaceOrderPage = async () => {
   const cart = await getMyCart();
