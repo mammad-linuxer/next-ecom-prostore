@@ -8,6 +8,7 @@ import { getUserById } from "./user.actions";
 import { insertOrderSchema } from "../validator";
 import { prisma } from "@/db/prisma";
 import { CartItem } from "@/types";
+import { convertToPlainObject } from "../utils";
 
 // Create Order
 export const createOrder = async () => {
@@ -57,7 +58,6 @@ export const createOrder = async () => {
       totalPrice: cart.totalPrice,
     });
 
-
     // Create a transaction to create order and  order items in database
     const insertedOrderId = await prisma.$transaction(async (tx) => {
       const txClient = tx as typeof prisma;
@@ -97,3 +97,14 @@ export const createOrder = async () => {
     return { success: false, message: formatError(error) };
   }
 };
+
+export async function getOrderById(orderId: string) {
+  const data = await prisma.order.findFirst({
+    where: { id: orderId },
+    include: {
+      orderItems: true,
+      user: { select: { name: true, email: true } },
+    },
+  });
+  return convertToPlainObject(data);
+}
