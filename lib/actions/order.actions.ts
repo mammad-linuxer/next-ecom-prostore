@@ -9,6 +9,7 @@ import { insertOrderSchema } from "../validator";
 import { prisma } from "@/db/prisma";
 import { CartItem } from "@/types";
 import { convertToPlainObject } from "../utils";
+import { PAGE_SIZE } from "../constants";
 
 // Create Order
 export const createOrder = async () => {
@@ -106,21 +107,54 @@ export async function getOrderById(orderId: string) {
       user: { select: { name: true, email: true } },
     },
   });
-  
-  if(!data) throw new Error('No Order Found')
-    
-    // This is another type of handling Decimal type of Prices for Order
+
+  if (!data) throw new Error("No Order Found");
+
+  // This is another type of handling Decimal type of Prices for Order
   return convertToPlainObject({
     ...data,
     itemsPrice: data!.itemsPrice.toString(),
     taxPrice: data!.taxPrice.toString(),
-    shippingPrice:data!.shippingPrice.toString(),
+    shippingPrice: data!.shippingPrice.toString(),
     totalPrice: data!.totalPrice.toString(),
-    orderItems:data.orderItems.map(item =>{
+    orderItems: data.orderItems.map((item) => {
       return {
         ...item,
-        price:item.price.toString()
-      }
-    })
+        price: item.price.toString(),
+      };
+    }),
   });
+}
+
+// Get User Orders
+
+export async function getMyOrders({
+  limit = PAGE_SIZE,
+  page,
+}: {
+  limit?: number;
+  page: number;
+}) {
+  const session = await auth();
+  if (!session) throw new Error("User Not Authenticated!");
+
+  const userId = session.user!.id;
+
+  if (!userId) throw new Error("User Id not found!");
+
+  const data = await prisma.order.findMany({
+    where: { userId: userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    skip: (page - 1) * limit,
+  });
+
+  const dataCount = await prisma.order.count({
+    where: { userId: userId },
+  });
+
+  return {
+    data,
+    totolPage: Math.ceil(dataCount / limit),
+  };
 }
