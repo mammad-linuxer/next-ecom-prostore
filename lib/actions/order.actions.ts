@@ -154,7 +154,15 @@ export async function getMyOrders({
   });
 
   return {
-    data,
-    totolPage: Math.ceil(dataCount / limit),
+    data: data.map((item) => {
+      return {
+        ...item,
+        itemsPrice: item.itemsPrice.toString(),
+        shippingPrice: item.shippingPrice.toString(),
+        taxPrice: item.taxPrice.toString(),
+        totalPrice: item.totalPrice.toString(),
+      };
+    }),
+    totalPage: Math.ceil(dataCount / limit),
   };
 }
