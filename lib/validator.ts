@@ -114,7 +114,7 @@ export const insertOderItemSchema = z.object({
 });
 
 // Update Profile Schema
-export const userUpdateSchema = z.object({
+export const updateProfileSchema = z.object({
   name:z.string().min(3,'Name must have at least 3 characters.'),
   email:z.string().min(3,'Email must have at least 3 characters.')
 })
