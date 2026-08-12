@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { requireAdmin } from "@/lib/auth-guard";
 export const metadata: Metadata = {
   title: "Admin Dashboard",
 };
@@ -21,7 +22,8 @@ const AdminDashboardPage = async () => {
   const session = await auth();
 
   // Make sure the user is an admin
-  if (session?.user.role !== "admin") throw new Error("User is not ADMIN!");
+  //if (session?.user.role !== "admin") throw new Error("User is not ADMIN!");
+  await requireAdmin();
 
   // Get order summary
   const summary = await getOrderSummary();

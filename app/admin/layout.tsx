@@ -12,7 +12,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex flex-col">
         <div className="border-b container mx-auto">
           <div className="flex h-16 items-center px-4">
-            <Link href={"/app"} className="w-22">
+            <Link href={"/"} className="w-22">
               <Image
                 src={"/images/logo.svg"}
                 width={48}
