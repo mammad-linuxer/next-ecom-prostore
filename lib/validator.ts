@@ -115,6 +115,14 @@ export const insertOderItemSchema = z.object({
 
 // Update Profile Schema
 export const updateProfileSchema = z.object({
-  name:z.string().min(3,'Name must have at least 3 characters.'),
-  email:z.string().min(3,'Email must have at least 3 characters.')
-})
+  name: z.string().min(3, "Name must have at least 3 characters."),
+  email: z.string().min(3, "Email must have at least 3 characters."),
+});
+
+// PaymentResult
+export const paymentResultSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  email_address: z.string(),
+  pricePaid: z.string(),
+});

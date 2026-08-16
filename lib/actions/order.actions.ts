@@ -7,7 +7,7 @@ import { getMyCart } from "./cart.actions";
 import { getUserById } from "./user.actions";
 import { insertOrderSchema } from "../validator";
 import { prisma } from "@/db/prisma";
-import { CartItem } from "@/types";
+import { CartItem, PaymentResult } from "@/types";
 import { convertToPlainObject } from "../utils";
 import { PAGE_SIZE } from "../constants";
 import { Prisma } from "@prisma/client";
@@ -250,5 +250,87 @@ export async function deleteOrder(id: string) {
       success: false,
       message: formatError(error),
     };
+  }
+}
+
+// Update Order to "Paid" in DB
+async function updateOrderToPaid({
+  orderId,
+  paymentResult,
+}: {
+  orderId: string;
+  paymentResult?: PaymentResult;
+}) {
+  // Find the order in the DB and include th order items
+  const order = await prisma.order.findFirst({
+    where: { id: orderId },
+    include: { orderItems: true },
+  });
+
+  if (!order) throw new Error("Order not Found!");
+
+  if (order.isPaid) throw new Error("Order Already Paid!");
+
+  // Transaction to update the order and update the product quantities
+  await prisma.$transaction(async (tx) => {
+    // update all items quantities in th Database
+    for (const item of order.orderItems) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { increment: -item.qty } },
+      });
+    }
+
+    // Set the Order to paid
+    await tx.order.update({
+      where: { id: orderId },
+      data: { isPaid: true, paidAt: new Date(), paymentResult },
+    });
+  });
+
+  // Get the updated order after the transaction
+  const updatedOrder = await prisma.order.findFirst({
+    where: { id: orderId },
+    include: {
+      orderItems: true,
+      user: { select: { name: true, email: true } },
+    },
+  });
+
+  if (!updatedOrder) throw new Error("Order Not Found!");
+}
+
+// Update order to Paid by Cash On Delivery
+export async function updateOrderToPaidByCOD(orderId: string) {
+  try {
+    await updateOrderToPaid({ orderId });
+
+    revalidatePath(`/order/${orderId}`);
+
+    return { success: true, message: "Order Paid Successfully!" };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Update order to Delivered
+export async function deliverOrder(orderId: string) {
+  try {
+    const order = await prisma.order.findFirst({ where: { id: orderId } });
+
+    if (!order) throw new Error("Order Not Found!");
+
+    if (!order.isPaid) throw new Error("Order is Not Paid!");
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { isDelivered: true, deliveredAt: new Date() },
+    });
+
+    revalidatePath(`/order${orderId}`);
+
+    return { success: true, message: "Order Delivered Successfully!" };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
   }
 }
