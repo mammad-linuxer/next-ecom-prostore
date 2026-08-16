@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ShippingAddress } from "@/types";
 import { Metadata } from "next";
 import OrderDetailsTable from "./order-details-table";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Order Details",
@@ -16,6 +17,7 @@ const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
 
   if (!order) notFound();
 
+  const session = await auth();
   return (
     <>
       <OrderDetailsTable
@@ -23,6 +25,7 @@ const OrderDetailsPage = async (props: { params: Promise<{ id: string }> }) => {
           ...order,
           shippingAddress: order.shippingAddress as ShippingAddress,
         }}
+        isAdmin={session?.user.role === "admin" || false}
       />
     </>
   );

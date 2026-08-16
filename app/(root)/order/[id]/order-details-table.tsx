@@ -15,8 +15,59 @@ import { formatCurrency, formatDateTime, formatId } from "@/lib/utils";
 import { Order } from "@/types";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  deliverOrder,
+  updateOrderToPaidByCOD,
+} from "@/lib/actions/order.actions";
+import { useTransition } from "react";
+import { Button } from "@/components/ui/button";
 
-const OrderDetailsTable = ({ order }: { order: Order }) => {
+// Button To mark the order as paid
+const MarkAsPaidButton = ({ orderId }: { orderId: string }) => {
+  const [isPending, startTransition] = useTransition();
+  return (
+    <Button
+      type="button"
+      disabled={isPending}
+      onClick={() =>
+        startTransition(async () => {
+          const res = await updateOrderToPaidByCOD(orderId);
+          toast.success(res.message);
+        })
+      }
+    >
+      {isPending ? "Processing..." : "Mark As Paid"}
+    </Button>
+  );
+};
+
+// Button to make the order is delivered
+
+const MarkAsDeliveredButton = ({ orderId }: { orderId: string }) => {
+  const [isPending, startTransition] = useTransition();
+  return (
+    <Button
+      type="button"
+      disabled={isPending}
+      onClick={() =>
+        startTransition(async () => {
+          const res = await deliverOrder(orderId);
+          toast.success(res.message);
+        })
+      }
+    >
+      Mark As Delivered
+    </Button>
+  );
+};
+
+const OrderDetailsTable = ({
+  order,
+  isAdmin,
+}: {
+  order: Order;
+  isAdmin: boolean;
+}) => {
   const {
     shippingAddress,
     orderItems,
@@ -30,6 +81,7 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
     isDelivered,
     deliveredAt,
   } = order;
+
   return (
     <>
       <h1 className="py-4 text-2xl">Order {formatId(order.id)}</h1>
@@ -126,6 +178,13 @@ const OrderDetailsTable = ({ order }: { order: Order }) => {
                 <div>Total</div>
                 <div>{formatCurrency(totalPrice)}</div>
               </div>
+              {/* Cacsh On Delivery Button */}
+              {isAdmin && !isPaid && paymentMethod === "CashOnDelivery" && (
+                <MarkAsPaidButton orderId={order.id} />
+              )}
+              {isAdmin && isPaid && !isDelivered && (
+                <MarkAsDeliveredButton orderId={order.id} />
+              )}
             </CardContent>
           </Card>
         </div>
