@@ -16,7 +16,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Image
                 src={"/images/logo.svg"}
                 width={48}
-                height={47}
+                height={48}
                 alt={`${APP_NAME} logo`}
               />
             </Link>
